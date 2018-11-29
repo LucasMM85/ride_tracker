@@ -1,0 +1,32 @@
+/*SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
+		List<String> columns = new ArrayList<>();
+		columns.add("name");
+		columns.add("duration");
+
+		insert.setSchemaName("public");
+		insert.setTableName("ride");
+		insert.setColumnNames(columns);
+
+		Map<String, Object> data = new HashMap<>();
+		data.put("name", ride.getName());
+		data.put("duration", ride.getDuration());
+
+		insert.setGeneratedKeyName("id");
+
+		Number key = insert.executeAndReturnKey(data);
+
+		System.out.println("Key: "+key);*/
+
+
+
+
+KeyHolder keyHolder = new GeneratedKeyHolder();
+		jdbcTemplate.update(connection -> {
+			PreparedStatement ps = connection.prepareStatement("insert into public.ride (name, duration) values (?,?)", new String[] {"id"});
+			ps.setString(1, ride.getName());
+			ps.setInt(2, ride.getDuration());
+			return ps;
+		}, keyHolder);
+
+		Number id = keyHolder.getKey();
+		return getRide(id.intValue());
