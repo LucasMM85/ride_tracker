@@ -5,6 +5,7 @@ import com.pluralsight.repository.util.RideRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -58,7 +59,9 @@ public class RideRepositoryImpl implements RideRepository {
 		return getRide(id.intValue());
 	}
 
-	private Ride getRide(Integer id) {
+
+	@Override
+	public Ride getRide(Integer id) {
 		Ride ride = jdbcTemplate.queryForObject("select * from public.ride where id = ?", new RideRowMapper(), id);
 		return ride;
 	}
@@ -69,5 +72,28 @@ public class RideRepositoryImpl implements RideRepository {
 		List<Ride> rides = jdbcTemplate.query("select * from public.ride", new RideRowMapper());
 		return rides;
 	}
-	
+
+	@Override
+	public Ride updateRide(Ride ride) {
+		jdbcTemplate.update("update ride set name = ?, duration = ? where id = ?",
+				ride.getName(), ride.getDuration(), ride.getId());
+		return ride;
+	}
+
+	@Override
+	public void updateRides(List<Object[]> pairs) {
+		jdbcTemplate.batchUpdate("update public.ride set ride_date = ? where id = ?", pairs);
+	}
+
+	@Override
+	public void deleteRide(Integer id) {
+		//jdbcTemplate.update("delete from public.ride where id = ?", id);
+
+		NamedParameterJdbcTemplate namedTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+
+		Map<String, Object> paramMap = new HashMap<>();
+		paramMap.put("id", id);
+
+		namedTemplate.update("delete from public.ride where id = :id", paramMap);
+	}
 }
